@@ -1,6 +1,7 @@
 import { TestBed, async, flush, tick } from '@angular/core/testing';
 import { Component } from '@angular/core';
 import { ComponentFixture, fakeAsync } from '@angular/core/testing';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 
 @Component({
     selector: 'app-user-signup',
@@ -10,6 +11,8 @@ import { ComponentFixture, fakeAsync } from '@angular/core/testing';
 export class UserSignupComponent {
     public userSignupCount = 0;
     public isMaxUsers = false;
+
+    public constructor(private _http: HttpClient) { }
 
     public addNewUser(): Promise<any> {
         return new Promise(resolve => {
@@ -25,6 +28,10 @@ export class UserSignupComponent {
         });
     }
 
+    public checkStatus(): Promise<any> {
+        return this._http.get<any>('https://httpstat.us/200').toPromise();
+    }
+
 }
 
 describe('UserSignupComponent', () => {
@@ -34,9 +41,15 @@ describe('UserSignupComponent', () => {
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
+            imports: [
+                HttpClientModule,
+            ],
             declarations: [
                 UserSignupComponent
             ],
+            providers: [
+                HttpClient,
+            ]
         }).compileComponents();
     }));
 
@@ -111,6 +124,11 @@ describe('UserSignupComponent', () => {
         const htmlPostBonding = fixture.nativeElement.querySelector('h1');
 
         expect(htmlPostBonding.textContent).toBe('1', 'data bindings now up to date after manual change detection');
+    }));
+
+    it('should raise an exception for an HTTP request inside a fakeAsync method', fakeAsync(() => {
+        component.checkStatus();
+        flush();
     }));
 
 });
